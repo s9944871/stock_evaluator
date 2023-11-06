@@ -104,7 +104,6 @@ def cash_divs():
     labelVar.set(f'{stk}過去五冬的盈餘配息率是{pcr[0]}%、{pcr[1]}%、{pcr[2]}%、{pcr[3]}%、{pcr[4]}%。\n（已經寫入去評估報告！）')
     with open(file_path, 'a', encoding='utf-8') as f:
             f.write(f'{stk}過去五冬的現金殖利率是{cdr[0]}%、{cdr[1]}%、{cdr[2]}%、{cdr[3]}%、{cdr[4]}%。\n{stk}過去五冬的盈餘配息率是{pcr[0]}%、{pcr[1]}%、{pcr[2]}%、{pcr[3]}%、{pcr[4]}%。\n')
-    
         
     # 檢查過去五冬現金殖利率
     low_cdr=[]
@@ -126,7 +125,6 @@ def cash_divs():
         with open(file_path, 'a', encoding='utf-8') as f:
                 f.write(f'{stk}出現過去五冬比5%較減的殖利率：{low_cdr}（%），無閣考慮!\n')
 
-    
     rate = 0
     m=len(pcr)
     for u in pcr:
@@ -186,8 +184,6 @@ def getIS():
                     with open(file_path, 'a', encoding='utf-8') as f:
                         f.write(f'{stk}毛利率有負數，無閣考慮！\n')
                     continue
-            
-                        
             if '營業利益'==tr.find('nobr').text.strip():
                 opr=tr.find_all('td')
                 oprs=[opr[2].text.strip(),opr[4].text.strip(),opr[6].text.strip(),opr[8].text.strip(),opr[10].text.strip(),opr[12].text.strip(),opr[14].text.strip()]
@@ -207,9 +203,7 @@ def getIS():
                     with open(file_path, 'a', encoding='utf-8') as f:
                         f.write(f'{stk}營利率有負數，無閣考慮！\n')
                     continue
-            
-                
-   # 粗估今年EPS
+    # 粗估今年EPS
             if '每股稅後盈餘(元)'==tr.find('nobr').text.strip():
                 epss=tr.find_all('td')
                 eps=[epss[1].text.strip(),epss[3].text.strip(),epss[5].text.strip(),epss[7].text.strip(),epss[9].text.strip(),epss[11].text.strip(),epss[13].text.strip()]
@@ -230,12 +224,12 @@ def getIS():
                     with open(file_path, 'a', encoding='utf-8') as f:
                         f.write(f'{stk}掠算今年的EPS是{pred_eps:.2f}。\n')
 
-                        
     # 預估今年殖利率=估今年配息/股價
 
     # 掠即時股價
 
-    stk_p = twstock.realtime.get(stk)['realtime']['latest_trade_price']
+    # 盤中袂有即時股價，所以若無，就取上懸價（上保守的投資成本）
+    stk_p = twstock.realtime.get(stk)['realtime']['latest_trade_price'] if twstock.realtime.get(stk)['realtime']['latest_trade_price']!='-' else twstock.realtime.get(stk)['realtime']['high']
 
     pred_div_r=pred_eps/float(stk_p)
     if float(eps[0])<0 or float(eps[1])<0:
@@ -301,11 +295,18 @@ def getBS():
                 inv_rates.append(inv_rs[2].text.strip())
                 inv_rates.append(inv_rs[4].text.strip())
                 inv_rates.append(inv_rs[6].text.strip())
+            else:
+                pass
+                
     labelVar.set(f'{stk}過去這幾期的存貨佔資產比例是{inv_rates}(%)。\n（已經寫入去評估報告！）')
     with open(file_path, 'a', encoding='utf-8') as f:
             f.write(f'{stk}過去這幾期的存貨佔資產比例是{inv_rates}(%)。\n')
     
-    if float(inv_rates[0])/float(inv_rates[1])>1.3 or float(inv_rates[0])/float(inv_rates[2])>1.5:
+    if inv_rates==[]:
+        with open(file_path, 'a', encoding='utf-8') as f:
+            f.write(f'{stk}無存貨數字！\n')
+    
+    elif float(inv_rates[0])/float(inv_rates[1])>1.3 or float(inv_rates[0])/float(inv_rates[2])>1.5:
         labelVar.set(f'{stk}過去三冬存貨比例有變懸，無閣考慮！\n（已經寫入去評估報告！）')
         with open(file_path, 'a', encoding='utf-8') as f:
             f.write(f'{stk}過去三冬存貨比例有變懸，無閣考慮！\n')
@@ -314,8 +315,6 @@ def getBS():
         with open(file_path, 'a', encoding='utf-8') as f:
             f.write(f'{stk}的存貨比例看起來無問題！\n')
 
-    
-        
     # 流動負債率<30%
 
     liq_libs = []
