@@ -250,9 +250,13 @@ def getIS():
 
     # 掠即時股價
 
-    # 盤中袂有即時股價，所以若無，就取上懸價（上保守的投資成本）
-    stk_p = twstock.realtime.get(stk)['realtime']['latest_trade_price'] if twstock.realtime.get(
-        stk)['realtime']['latest_trade_price'] != '-' else twstock.realtime.get(stk)['realtime']['high']
+    # 盤中袂有即時股價，所以若無，就取上懸價，若閣無就取賣價上懸的出價（上保守的投資成本）
+    if twstock.realtime.get(stk)['realtime']['latest_trade_price'] != '-':
+        stk_p = twstock.realtime.get(stk)['realtime']['latest_trade_price']
+    elif twstock.realtime.get(stk)['realtime']['high'] != '-':
+        stk_p = twstock.realtime.get(stk)['realtime']['high']
+    else:
+        stk_p = twstock.realtime.get(stk)['realtime'][']best_ask_price']
 
     pred_div_r = pred_eps/float(stk_p)
     if float(eps[0]) < 0 or float(eps[1]) < 0:
